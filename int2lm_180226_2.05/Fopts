@@ -1,0 +1,40 @@
+#########
+#  gfortran
+#########
+#
+# Fortran compiler
+#-Wall -Wconversion  -pedantic -std=f2008
+#F90          = mpif90   -cpp -c  -fcheck=all                                 
+#NCDFDIR      = /usr
+NCDFDIR      = /usr/local/
+#GRIBDIR      = /uwork1/uschaett/lib_gfortran/grib_api-1.20.0
+#GRIBDIR      = /uwork1/uschaett/lib_gfortran/eccodes-2.3.0_aec
+GRIBDIR      = /usr/local/
+#
+F90          = mpif90   -cpp -c -ffree-line-length-none                      \
+               -ffpe-trap=invalid,zero,overflow -fbacktrace  -fdump-core     \
+               -I$(SRCDIR)  -I$(NCDFDIR)/include  -I$(GRIBDIR)/include       \
+               -DGRIBAPI -DGRIBDWD -DNETCDF
+#              -I/home/uschaett/LIBS/lib_gfortran/grib_api_1.9.16/include    \
+#
+# linker
+LDPAR        = mpif90
+LDSEQ        = gfortran
+#
+#
+# standard binary
+PROGRAM      = tstint2lm
+#
+# compile flags
+COMFLG1      = -O2 -g
+#COMFLG1      = -g
+COMFLG2      = $(COMFLG1)
+COMFLG3      = $(COMFLG2)
+COMFLG4      = -O0
+#
+LIB          =  /usr/local/lib/libgrib1.a -L$(GRIBDIR)/lib      -L$(NCDFDIR) \
+               -lnetcdff  -lnetcdf -leccodes_f90 -leccodes         \
+               -lm -lpng -ljasper
+#              -L/uwork1/uschaett/lib_gfortran/aec-1.0.0                    \
+#              -lnetcdff  -lnetcdf -laec -leccodes_f90 -leccodes            \
+#              -lnetcdff  -lnetcdf -lgrib_api_f90 -lgrib_api                \
