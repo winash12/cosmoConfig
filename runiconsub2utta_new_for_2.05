@@ -1,0 +1,151 @@
+#!/bin/csh
+#
+# The ICON2EU Job
+#
+#rm -f icon2cosmo_job
+#################################################
+# number of processors
+#################################################
+
+
+set NPX=2
+set NPY=2
+set NPIO=0
+set CPN=4                   # cores per node
+set NP1=`expr $NPX \* $NPY`
+set NP=4
+set N1=`expr $NP + $CPN - 1`
+set NODES=`expr $N1 \/ $CPN` # number of physical nodes
+
+set DATE=2018121400
+set RUNDIR=$PWD
+set BASE=/home/winash12/meteorology_project/cosmo_weather_model
+set LM_EXT=$BASE/topos
+set IN_EXT=$BASE/topos
+set IN_DIR=$BASE/data
+set LM_DIR=$BASE/reference_data/COSMO_7_input
+
+
+#cat > icon2cosmo_job  << ****
+
+
+# change to working directory
+cd ${RUNDIR}
+
+#################################################
+# cat together the INPUT-file
+#################################################
+
+
+cat > INPUT << end_input
+ &CONTRL
+  ydate_ini='$DATE', ydate_bd='$DATE',
+  hstart=0.0, hstop=120.0, hincbound=3.0,
+  linitial=.TRUE.,  lboundaries =.TRUE.,
+  nprocx=$NPX, nprocy=$NPY, nprocio=$NPIO, lreorder=.FALSE.,
+  yinput_model='ICON',
+  ltime_mean=.TRUE., 
+  lfilter_oro=.TRUE., eps_filter=0.1, 
+  ilow_pass_oro=1, ilow_pass_xso=0, rxso_mask=0.0,
+  lfilter_pp=.FALSE., norder_filter=5,
+  itype_profiles_vert_interp=2,
+  itype_balance_pp=2, itype_fast_waves_lm=2,
+  luvcor=.TRUE.,
+  lmulti_layer_in=.TRUE., lmulti_layer_lm=.TRUE., 
+  lprog_qi=.TRUE., lprog_qr_qs=.TRUE., 
+  lsso=.TRUE., lforest=.TRUE., llake=.FALSE., lbdclim=.FALSE., lt_cl_corr=.TRUE.,
+  lseaice=.TRUE., lprog_rho_snow=.TRUE.,
+  itype_ndvi=1, itype_aerosol=2, itype_albedo=3,  idbg_level=2,
+  lcheck_uuidOfHGrid=.FALSE.,
+  lmultlay_deepsoil_clim_hcorr=.TRUE.,
+ /
+ &GRID_IN
+  ke_in_tot=90,
+  yicon_grid_cat = '$IN_EXT',
+  yicon_grid_lfn = 'icon_grid_uttarakhand_R03B07_20180625.nc'
+  nrootdiv_icon=3,
+  nbisect_icon=7,
+  nlevskip=20,
+  /
+  &LMGRID
+   startlat_tot  = 5.0, startlon_tot  = 65.0,
+   pollat= 90.0,        pollon=-180.0,
+   dlon=0.0625,        dlat=0.0625,
+   ielm_tot=401,         jelm_tot=561,        kelm_tot=50,
+   ke_soil_lm=7,
+   lanalyt_calc_t0p0=.TRUE.,
+! reference atmosphere
+   irefatm=2, delta_t=90.0, h_scal=12000.0, t0sl=300.0, 
+! settings for galchen
+!  ivctype=2, 
+! settings for sleve
+   ivctype=4, svc1=10000.0, svc2=8000.0,
+! vertical coordinates: result of program "galchen(50,3.8,30000,15000)" from Uli Blahak:
+! should also be possible for sleve
+   vcflat = 15000.0,
+   vcoord_d = 30000.00, 28574.09, 27198.21, 25870.74, 24590.12,
+              23354.87, 22163.61, 21014.99, 19907.74, 18840.66,
+              17812.60, 16822.44, 15869.14, 14951.68, 14069.12,
+              13220.53, 12405.03, 11621.78, 10869.96, 10148.82,
+              9457.59, 8795.59, 8162.12, 7556.52, 6978.19,
+              6426.50, 5900.89, 5400.80, 4925.71, 4475.11,
+              4048.50, 3645.43, 3265.45, 2908.13, 2573.08,
+              2259.90, 1968.23, 1697.72, 1448.06, 1218.94,
+              1010.07, 821.21, 652.12, 502.61, 372.52,
+              261.72, 170.16,  100.00, 50.00, 20.00,
+              0.00, 
+   lnewVGrid=.FALSE.,
+ /
+ &DATA
+  ie_ext=1921, je_ext=1601,
+  ylmext_lfn='cosmo_asia_0.0625_1921x1601.g1',
+  ylmext_cat='$LM_EXT',
+  ylmext_form_read='apix',
+  yinext_lfn='icon_extpar_uttarakhand_R03B07_20180625.nc',
+  yin_hhl='icon_hhl_uttarakhand_R03B07.g2'
+  yinext_form_read='ncdf',
+  yinext_cat='$IN_EXT',
+  yin_form_read='apix',
+  yin_cat='$IN_DIR',
+  ylm_form_write='ncdf',
+  ylm_cat='$LM_DIR'
+  nprocess_ini = 134, nprocess_bd = 135,
+  nl_soil_in=2, nl_soil_lm=2,
+  l_ke_in_gds=.TRUE.,
+ /
+ &PRICTR
+  igp_tot = 36, 40, 48, 44, 48, 85, 77
+  jgp_tot = 30, 94, 38, 26, 26, 96, 12
+  lchkin=.TRUE., lchkout=.TRUE.,
+  lprps=.FALSE.,
+ /
+ &EPSCTL
+  iepsmem_bc=3,
+  iepstyp_bc=202,
+  iepstot_bc=8,
+ /
+end_input
+
+#################################################
+# run the program
+#################################################
+
+rm -f YUCHKDAT YUTIMING YUDEBUG OUTPUT
+#rm -f $LM_DIR/lbff*
+
+# if working with DWD GRIB1 ASCII bitmaps
+#export LIBDWD_BITMAP_TYPE=ASCII
+
+#################################
+
+
+# machine specific for my Linux WS
+setenv ECCODES_DEFINITION_PATH /home/winash12/meteorology_project/cosmo_weather_model/int2lm_180226_2.05/ec-2.8.0/definitions.edzw:/home/winash12/meteorology_project/cosmo_weather_model/int2lm_180226_2.05/ec-2.8.0/definitions
+
+
+setenv ECCODES_SAMPLES_PATH /home/winash12/meteorology_project/cosmo_weather_model/int2lm_180226_2.05/ec-2.8.0/ec-2.8.0/samples-19.1/
+
+
+mpirun -np 4 $BASE/int2lm_180226_2.05/tstint2lm
+
+
