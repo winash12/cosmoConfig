@@ -1,0 +1,23 @@
+##########
+# gfortran 
+##########
+F90          = gfortran -c -cpp $(INCLUDES:%=-I%)
+CC           = gcc -c -cpp $(INCLUDES:%=-I%)
+AR           = ar
+LD           = gfortran
+LDFLAGS      = $(INCLUDES:%=-I%)
+
+INSTALL      = /home/winash12/meteorology_project/cosmo_weather_model/RTTOV10
+
+## set includes to NetCDF library include directory
+INCLUDES    ?= /usr/local/include
+
+
+# Libraries needed: NetCDF, librttov10.2
+LIBS        ?= -L/usr/local/lib   -lnetcdf -lnetcdff                             \
+               -L$(LIBDIR)  -lhrit
+
+# default compileflags & optimizations 
+F90FLAGS    ?= -g -fcheck=all -fbacktrace
+F90OPT      ?= -O3 -g
+CCFLAGS     ?= -O3 -g

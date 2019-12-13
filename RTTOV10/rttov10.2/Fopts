@@ -1,0 +1,27 @@
+##########
+# gfortran 
+##########
+F90          = gfortran -c -pipe -x f95-cpp-input \
+                        $(INCLUDES:%=-I%) \
+                        $(DEFINES:%=-D%)
+AR           = ar
+LD           = gfortran  \
+                        $(INCLUDES:%=-I%) \
+                        $(DEFINES:%=-D%)
+
+DEFINES     ?= RTTOV_NETCDF
+
+#INCLUDES    ?= /usr/include $(PKGDIR)/include /usr/local/pkg
+# set include for NetCDF and for source directory
+INCLUDES    ?= /usr/local/include
+               
+# set directory for NetCDF library
+LIBS        ?= -L/usr/local/lib      \
+               -lnetcdf -lnetcdff
+
+# default compileflags & optimizations 
+F90FLAGS    ?= -g -fbounds-check -fno-range-check
+F90OPT      ?= -O3  
+# following flags may be used with newer gfortran
+#F90FLAGS    ?= -g -fbacktrace -fbounds-check -fno-range-check
+#F90OPT      ?= -O3 -march=native -mtune=native 

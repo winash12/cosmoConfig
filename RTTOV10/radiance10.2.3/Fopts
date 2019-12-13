@@ -1,0 +1,31 @@
+##########
+# gfortran 
+##########
+F90          = gfortran -c -cpp -pipe     \
+                        $(INCLUDES:%=-I%) \
+                        $(DEFINES:%=-D%)
+AR           = ar
+LD           = gfortran
+
+INSTALL      = /home/winash12/meteorology_project/cosmo_weather_model/RTTOV10
+RTTOVDIR     = /home/winash12/meteorology_project/cosmo_weather_model/RTTOV10/rttov10.2
+HRITDIR      = /home/winash12/meteorology_project/cosmo_weather_model/RTTOV10/hrit_tools
+DEFINES     ?= RTTOV_NETCDF RTTOV10 RTTOV_IFC __RADIANCE__ HRIT
+
+# set includes to NetCDF library include directory
+INCLUDES    ?= /usr/local/include        \
+               $(HRITDIR)/obj      \
+               $(RTTOVDIR)/include \
+               $(RTTOVDIR)/src     \
+               $(RTTOVDIR)/obj
+               
+# Libraries needed: NetCDF, librttov10.2
+LIBS        ?= -L/usr/local/lib -lnetcdff -lnetcdf \
+               $(RTTOVDIR)/librttov10.2.a
+
+# default compileflags & optimizations 
+F90FLAGS    ?= -g -fbounds-check -fno-range-check
+F90OPT      ?= -O3  
+# following flags may be used with newer gfortran
+#F90FLAGS    ?= -g -fbacktrace -fbounds-check -fno-range-check
+#F90OPT      ?= -O3 -march=native -mtune=native 
